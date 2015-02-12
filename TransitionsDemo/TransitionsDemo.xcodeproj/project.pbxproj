@@ -15,6 +15,7 @@
 		18BC19791A64B68800261644 /* CamButton.m in Sources */ = {isa = PBXBuildFile; fileRef = 18BC19781A64B68800261644 /* CamButton.m */; };
 		18BC197C1A64BF2500261644 /* CamView.m in Sources */ = {isa = PBXBuildFile; fileRef = 18BC197B1A64BF2500261644 /* CamView.m */; };
 		18D2159D1A724E4F00FB18B4 /* opencyclemap@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 18D2159C1A724E4F00FB18B4 /* opencyclemap@2x.png */; };
+		18F258241A7F152C005F87A3 /* ViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 18F258231A7F152C005F87A3 /* ViewController.xib */; };
 		3CD5090B189FFE6900BAE35A /* CECubeAnimationController.m in Sources */ = {isa = PBXBuildFile; fileRef = 3CD50909189FFE6900BAE35A /* CECubeAnimationController.m */; };
 		7273232017DFBD4D0072C7FD /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7273231F17DFBD4D0072C7FD /* Foundation.framework */; };
 		7273232217DFBD4D0072C7FD /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7273232117DFBD4D0072C7FD /* CoreGraphics.framework */; };
@@ -30,7 +31,7 @@
 		7273236317DFBEFE0072C7FD /* CEReversibleAnimationController.m in Sources */ = {isa = PBXBuildFile; fileRef = 7273236217DFBEFE0072C7FD /* CEReversibleAnimationController.m */; };
 		7273236917DFBF140072C7FD /* CEBaseInteractionController.m in Sources */ = {isa = PBXBuildFile; fileRef = 7273236617DFBF140072C7FD /* CEBaseInteractionController.m */; };
 		7273236A17DFBF140072C7FD /* CEHorizontalSwipeInteractionController.m in Sources */ = {isa = PBXBuildFile; fileRef = 7273236817DFBF140072C7FD /* CEHorizontalSwipeInteractionController.m */; };
-		7273236D17DFC0690072C7FD /* NavigationController.m in Sources */ = {isa = PBXBuildFile; fileRef = 7273236C17DFC0690072C7FD /* NavigationController.m */; };
+		7273236D17DFC0690072C7FD /* AKNavigationController.m in Sources */ = {isa = PBXBuildFile; fileRef = 7273236C17DFC0690072C7FD /* AKNavigationController.m */; };
 		7273237017DFC4710072C7FD /* SettingsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 7273236F17DFC4710072C7FD /* SettingsViewController.m */; };
 		72B92C661856FE98001A2D84 /* CEPortalAnimationController.m in Sources */ = {isa = PBXBuildFile; fileRef = 72B92C651856FE98001A2D84 /* CEPortalAnimationController.m */; };
 		72C15E1117E10C620056B3F9 /* CECrossfadeAnimationController.m in Sources */ = {isa = PBXBuildFile; fileRef = 72C15E1017E10C620056B3F9 /* CECrossfadeAnimationController.m */; };
@@ -56,6 +57,7 @@
 		18BC197A1A64BF2500261644 /* CamView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CamView.h; sourceTree = "<group>"; };
 		18BC197B1A64BF2500261644 /* CamView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CamView.m; sourceTree = "<group>"; };
 		18D2159C1A724E4F00FB18B4 /* opencyclemap@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "opencyclemap@2x.png"; sourceTree = "<group>"; };
+		18F258231A7F152C005F87A3 /* ViewController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = ViewController.xib; sourceTree = "<group>"; };
 		3CD50909189FFE6900BAE35A /* CECubeAnimationController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CECubeAnimationController.m; sourceTree = "<group>"; };
 		3CD5090A189FFE6900BAE35A /* CECubeAnimationController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CECubeAnimationController.h; sourceTree = "<group>"; };
 		7273231C17DFBD4D0072C7FD /* TransitionsDemo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TransitionsDemo.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -83,8 +85,8 @@
 		7273236617DFBF140072C7FD /* CEBaseInteractionController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CEBaseInteractionController.m; sourceTree = "<group>"; };
 		7273236717DFBF140072C7FD /* CEHorizontalSwipeInteractionController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CEHorizontalSwipeInteractionController.h; sourceTree = "<group>"; };
 		7273236817DFBF140072C7FD /* CEHorizontalSwipeInteractionController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CEHorizontalSwipeInteractionController.m; sourceTree = "<group>"; };
-		7273236B17DFC0690072C7FD /* NavigationController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NavigationController.h; sourceTree = "<group>"; };
-		7273236C17DFC0690072C7FD /* NavigationController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NavigationController.m; sourceTree = "<group>"; };
+		7273236B17DFC0690072C7FD /* AKNavigationController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AKNavigationController.h; sourceTree = "<group>"; };
+		7273236C17DFC0690072C7FD /* AKNavigationController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AKNavigationController.m; sourceTree = "<group>"; };
 		7273236E17DFC4710072C7FD /* SettingsViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SettingsViewController.h; sourceTree = "<group>"; };
 		7273236F17DFC4710072C7FD /* SettingsViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SettingsViewController.m; sourceTree = "<group>"; };
 		72B92C641856FE98001A2D84 /* CEPortalAnimationController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CEPortalAnimationController.h; sourceTree = "<group>"; };
@@ -171,10 +173,11 @@
 				7273233117DFBD4D0072C7FD /* Main_iPhone.storyboard */,
 				7273233717DFBD4D0072C7FD /* ViewController.h */,
 				7273233817DFBD4D0072C7FD /* ViewController.m */,
+				18F258231A7F152C005F87A3 /* ViewController.xib */,
 				7273233A17DFBD4D0072C7FD /* Images.xcassets */,
 				7273232617DFBD4D0072C7FD /* Supporting Files */,
-				7273236B17DFC0690072C7FD /* NavigationController.h */,
-				7273236C17DFC0690072C7FD /* NavigationController.m */,
+				7273236B17DFC0690072C7FD /* AKNavigationController.h */,
+				7273236C17DFC0690072C7FD /* AKNavigationController.m */,
 				7273236E17DFC4710072C7FD /* SettingsViewController.h */,
 				7273236F17DFC4710072C7FD /* SettingsViewController.m */,
 			);
@@ -292,6 +295,7 @@
 			files = (
 				18B5A4BB1A7112BD00E18507 /* icon_cross@2x.png in Resources */,
 				7273233B17DFBD4D0072C7FD /* Images.xcassets in Resources */,
+				18F258241A7F152C005F87A3 /* ViewController.xib in Resources */,
 				18BC19761A64B66300261644 /* cam_button_bg@2x.jpg in Resources */,
 				7273233317DFBD4D0072C7FD /* Main_iPhone.storyboard in Resources */,
 				18D2159D1A724E4F00FB18B4 /* opencyclemap@2x.png in Resources */,
@@ -319,7 +323,7 @@
 				7273236017DFBEBF0072C7FD /* CETurnAnimationController.m in Sources */,
 				7273236A17DFBF140072C7FD /* CEHorizontalSwipeInteractionController.m in Sources */,
 				7D0D046C1816DBA700F289A6 /* CENatGeoAnimationController.m in Sources */,
-				7273236D17DFC0690072C7FD /* NavigationController.m in Sources */,
+				7273236D17DFC0690072C7FD /* AKNavigationController.m in Sources */,
 				18B5A4B71A71021600E18507 /* AKTabBar.m in Sources */,
 				18BC19791A64B68800261644 /* CamButton.m in Sources */,
 				7273237017DFC4710072C7FD /* SettingsViewController.m in Sources */,

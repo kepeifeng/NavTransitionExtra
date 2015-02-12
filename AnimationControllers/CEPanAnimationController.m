@@ -15,12 +15,24 @@
 
 - (void)animateTransition:(id<UIViewControllerContextTransitioning>)transitionContext fromVC:(UIViewController *)fromVC toVC:(UIViewController *)toVC fromView:(UIView *)fromView toView:(UIView *)toView {
     
+    
+//    if (toView.superview.tag != 1000) {
+//        UIView * toViewContent = toView;
+//        toView = [[UIView alloc] initWithFrame:toViewContent.bounds];
+//        toView.alpha = 0.5;
+//        toView.tag = 1000;
+//        [toView addSubview:toViewContent];
+//        [self.navigationController.view addSubview:toView];
+//        
+//    }
+    
     CGFloat SCREEN_WIDTH = CGRectGetWidth([[UIScreen mainScreen] bounds]);
     NSLog(@"%s", __PRETTY_FUNCTION__);
     self.duration = .3;
     // Add the toView to the container
     UIView* containerView = [transitionContext containerView];
     [containerView addSubview:toView];
+    
     toView.frame = CGRectMake(self.reverse ? -160 : SCREEN_WIDTH, toView.frame.origin.y, toView.frame.size.width, toView.frame.size.height);
     
     self.reverse ? [containerView sendSubviewToBack:toView] : [containerView bringSubviewToFront:toView];
@@ -28,12 +40,24 @@
     AKNavigationBar * navigationBar = (AKNavigationBar *)self.navigationController.navigationBar;
     UIViewController * targetVC = ([toVC isKindOfClass:[UITabBarController class]])?([(UITabBarController *)toVC selectedViewController]):toVC;
     
+    CGRect toViewRect = toView.frame;
     if (targetVC.navigationItem.navigationBarHidden) {
-        CGRect toViewRect = toView.frame;
         toViewRect.size.height = CGRectGetHeight(self.navigationController.view.bounds);
         toViewRect.origin.y = 0;
-        toView.frame = toViewRect;
+    }else{
+    
+        toViewRect.size.height = CGRectGetHeight(self.navigationController.view.bounds) - CGRectGetMaxY(navigationBar.frame);
+        toViewRect.origin.y = CGRectGetMaxY(navigationBar.frame);
     }
+    toView.frame = toViewRect;
+    
+    
+    [navigationBar willTransitFromViewController:fromVC toViewController:toVC];
+    //======
+
+
+    
+    //======
     
     /*
     AKNavigationBar * navigationBar = (AKNavigationBar *)self.navigationController.navigationBar;
@@ -134,6 +158,7 @@
         fromView.frame = CGRectMake(!self.reverse ? -160 : SCREEN_WIDTH, fromView.frame.origin.y, fromView.frame.size.width, fromView.frame.size.height);
         toView.frame = CGRectMake(0, toView.frame.origin.y, toView.frame.size.width, toView.frame.size.height);
         
+
         /*CGRect finalRect = toViewBar.frame;
         finalRect.origin.x = 0;
         
@@ -168,10 +193,11 @@
             fromView.frame = CGRectMake(!self.reverse ? -160 : SCREEN_WIDTH, fromView.frame.origin.y, fromView.frame.size.width, fromView.frame.size.height);
             toView.frame = CGRectMake(0, toView.frame.origin.y, toView.frame.size.width, toView.frame.size.height);
             navigationBar.navComponentAlpha = toValue;
+            
             /*[fromViewBar removeFromSuperview];*/
         }
         NSLog(@"Finished");
-        
+        [navigationBar finishedTransitionFromViewController:fromVC toViewController:toVC canceled:[transitionContext transitionWasCancelled]];
         [transitionContext completeTransition:![transitionContext transitionWasCancelled]];
     }];
     

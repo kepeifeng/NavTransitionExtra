@@ -10,10 +10,12 @@
 #import "AppDelegate.h"
 #import "CEBaseInteractionController.h"
 #import "AKNavigationBar.h"
-#import "NavigationController.h"
+#import "AKNavigationController.h"
 #import "SettingsViewController.h"
+#import "CamView.h"
 
 @interface ViewController () <UIViewControllerTransitioningDelegate>
+@property (weak, nonatomic) IBOutlet UILabel *hideLabel;
 
 @end
 
@@ -24,6 +26,7 @@ static BOOL shouldShowNavigationBar = YES;
     int _index;
     NSString * _name;
 }
+
 
 -(id)initWithCoder:(NSCoder *)aDecoder{
     self = [super initWithCoder:aDecoder];
@@ -42,6 +45,7 @@ static BOOL shouldShowNavigationBar = YES;
         _index = count;
         _name = [NSString stringWithFormat:@"%d号", _index];
         count++;
+        self.automaticallyAdjustsScrollViewInsets = NO;
 
     }
     
@@ -49,20 +53,15 @@ static BOOL shouldShowNavigationBar = YES;
 
 }
 
+-(void)dealloc{
+
+    NSLog(@"View Controller Dealloc");
+}
+
 - (void)viewDidLoad
 {
     [super viewDidLoad];
     
-    /*self.navigationItem.navigationBarHidden = shouldShowNavigationBar;
-    shouldShowNavigationBar = !shouldShowNavigationBar;*/
-    
-    
-//    _colors = @[[UIColor redColor],
-//                [UIColor orangeColor],
-//                [UIColor yellowColor],
-//                [UIColor greenColor],
-//                [UIColor blueColor],
-//                [UIColor purpleColor]];
 	
     UIColor * color = [UIColor colorWithRed:(arc4random_uniform(100)/100.0) green:(arc4random_uniform(100)/100.0) blue:(arc4random_uniform(100)/100.0) alpha:1.000];
     self.view.backgroundColor = color;
@@ -75,10 +74,12 @@ static BOOL shouldShowNavigationBar = YES;
     barView.contentMode = UIViewContentModeScaleAspectFill;
     //        UIColor * color = [UIColor colorWithRed:(arc4random_uniform(100)/100.0) green:(arc4random_uniform(100)/100.0) blue:(arc4random_uniform(100)/100.0) alpha:1.000];
     barView.backgroundColor = self.view.backgroundColor;
-    self.navigationItem.navigationBarView = barView;
+//    self.navigationItem.navigationBarView = barView;
     self.title = [NSString stringWithFormat:@"VC%@", _name];
 
     self.navigationItem.navigationBarHidden = (_index % 3 == 0);
+    
+    self.hideLabel.text = (self.navigationItem.navigationBarHidden)?@"Hide":@"Show";
     
     self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:[NSString stringWithFormat:@"Setting"] style:(UIBarButtonItemStylePlain) target:self action:@selector(setting:)];
     if (self.navigationItem.leftBarButtonItem == nil) {
@@ -94,14 +95,18 @@ static BOOL shouldShowNavigationBar = YES;
 //    [super didMoveToParentViewController:parent];
 //    NSLog(@"%@ didMoveToParentViewController %@", _name, parent);
 //}
+- (IBAction)fullScreen:(id)sender {
+    self.view.frame = [[UIScreen mainScreen] bounds];
+}
 
 -(void)setting:(id)sender{
     NSLog(@"setting tapped");
     
     ViewController * viewController = [[ViewController alloc] init];
     viewController.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:@"Close" style:(UIBarButtonItemStylePlain) target:self action:@selector(close:)];
-    NavigationController * navController = [[NavigationController alloc] initWithRootViewController:viewController];
-    navController.underStatusBar = YES;
+    AKNavigationController * navController = [[AKNavigationController alloc] initWithRootViewController:viewController];
+
+
     [self presentViewController:navController animated:YES completion:NULL];
     
 }
@@ -144,6 +149,16 @@ static BOOL shouldShowNavigationBar = YES;
     
     
     [self.navigationController popToRootViewControllerAnimated:YES];
+}
+
+- (IBAction)nextButtonTapped:(id)sender {
+    
+    ViewController * viewController = [[ViewController alloc] init];
+    
+    [self.navigationController pushViewController:viewController animated:YES];
+}
+- (IBAction)dismissButtonTapped:(id)sender {
+    [self dismissViewControllerAnimated:YES completion:NULL];
 }
 
 // - (id<UIViewControllerInteractiveTransitioning>)interactionControllerForDismissal:(id<UIViewControllerAnimatedTransitioning>)animator {

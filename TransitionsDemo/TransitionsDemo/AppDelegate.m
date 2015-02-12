@@ -14,7 +14,7 @@
 #import "CEHorizontalSwipeInteractionController.h"
 #import "AKNavigationBar.h"
 #import "CamView.h"
-#import "NavigationController.h"
+#import "AKNavigationController.h"
 
 @implementation AppDelegate
 
@@ -24,13 +24,17 @@
     AppDelegateAccessor.navigationControllerInteractionController = [CEHorizontalSwipeInteractionController new];
     
 
+    [AKNavigationController setUnderStatusBar:YES];
     
-    NavigationController * navigationController = (NavigationController *)self.window.rootViewController;
-    [(AKNavigationBar *)navigationController.navigationBar setDefaultBarView:^UIView *{
-        return [[UILabel alloc] initWithFrame:(CGRectMake(0, 0, 320, 44))];
+    AKNavigationController * navigationController = (AKNavigationController *)self.window.rootViewController;
+    [AKNavigationBar setDefaultBarViewConfig:^(UIView *view) {
+        [view addSubview:[[CamView alloc] initWithFrame:view.bounds]];
+//        UIColor * color = [UIColor colorWithRed:(arc4random_uniform(100)/100.0) green:(arc4random_uniform(100)/100.0) blue:(arc4random_uniform(100)/100.0) alpha:1.000];
+//        
+//        view.backgroundColor = color;
     }];
     
-    navigationController.underStatusBar = YES;
+
     
     UITabBarController * tabBarController = [navigationController.viewControllers firstObject];
     tabBarController.delegate = self;
@@ -44,6 +48,10 @@
 -(void)tabBarController:(UITabBarController *)tabBarController didSelectViewController:(UIViewController *)viewController{
 
     UINavigationController * navController = tabBarController.navigationController;
+
+
+    
+
     
     if ([navController.delegate respondsToSelector:@selector(navigationController:willShowViewController:animated:)]) {
         [navController.delegate navigationController:navController willShowViewController:tabBarController animated:NO];

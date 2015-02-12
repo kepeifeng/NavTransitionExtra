@@ -19,23 +19,28 @@
 //- (UIViewController *)popViewControllerAnimated:(BOOL)animated;
 //- (NSArray *)popToViewController:(UIViewController *)viewController animated:(BOOL)animated;
 //- (NSArray *)popToRootViewControllerAnimated:(BOOL)animated;
-@property (nonatomic) BOOL underStatusBar;
+//@property (nonatomic) BOOL underStatusBar;
 @property (nonatomic) CGFloat navComponentAlpha;
+@property (nonatomic) CGRect backgroundRect;
 @property (nonatomic, weak) UIView * backgroundView;
 -(UIView *)barViewForViewController:(UIViewController *)viewController;
 -(UIView *)prepareBarViewForViewController:(UIViewController *)viewController;
 
--(void)setFirstView:(UIView *)firstView secondView:(UIView *)secondView;
--(void)finishedTransitionToViewController:(UIViewController *)viewController;
+/*-(void)setFirstView:(UIView *)firstView secondView:(UIView *)secondView;*/
+-(void)willTransitFromViewController:(UIViewController *)fromVC toViewController:(UIViewController *)toVC;
+-(void)finishedTransitionFromViewController:(UIViewController *)fromVC toViewController:(UIViewController *)viewController canceled:(BOOL)canceled;
 //-(void)finishedTransitionFromViewController:(UIViewController *)fromViewController toViewController:(UIViewController *)toViewController;
-@property (nonatomic, copy) UIView * (^defaultBarView)();
+@property (nonatomic, copy) void (^defaultBarView)(UIView * view);
 
+
++(void(^)(UIView * view))defaultBarConfig;
++(void)setDefaultBarViewConfig:(void(^)(UIView * view))defaultBarConfig;
 @end
 
 
-@interface AKNavigationController : UINavigationController
+/*@interface AKNavigationController : UINavigationController
 
-@end
+@end*/
 
 @interface AKBarButtonItem : UIBarButtonItem
 
@@ -47,4 +52,5 @@
 //@property UIColor * navigationBarColor;
 //@property UIImage * navigationBarImage;
 @property UIView * navigationBarView;
+
 @end

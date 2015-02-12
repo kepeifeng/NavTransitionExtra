@@ -7,7 +7,7 @@
 //
 
 #import "SettingsViewController.h"
-#import "NavigationController.h"
+#import "AKNavigationController.h"
 #import "CEBaseInteractionController.h"
 #import "AppDelegate.h"
 #import "CEReversibleAnimationController.h"

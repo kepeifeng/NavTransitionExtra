@@ -11,6 +11,8 @@
 #import "CamButton.h"
 #import "CamView.h"
 
+static void(^_gDefaultBarConfig)(UIView * view) ;
+
 @implementation UINavigationItem (BackgroundColor)
 
 -(UIColor *)navigationBarBackgroundColor{
@@ -25,6 +27,10 @@
 @implementation AKNavigationBar{
     NSMapTable * _barViewMapTable;
     UIView * _contentView;
+    
+    UIView * _backgroundView;
+    
+    NSMutableArray * _backgroundViews;
 }
 @synthesize backgroundView = _myBackgroundView;
 
@@ -48,34 +54,35 @@
     self.navComponentAlpha = 1;
     self.backgroundColor = [UIColor clearColor];
     self.tintColor = [UIColor whiteColor];
+    self.barTintColor = [UIColor clearColor];
     [self setTitleTextAttributes:@{NSForegroundColorAttributeName:[UIColor whiteColor]}];
     self.clipsToBounds = NO;
     
-    CGRect drawingRect;
+//    CGRect drawingRect;
+//    
+//    if ( floor(NSFoundationVersionNumber) > NSFoundationVersionNumber_iOS_6_1)
+//    {
+//        // iOS 7
+//        CGFloat statusBarHeight = [UIApplication sharedApplication].statusBarFrame.size.height;
+//        drawingRect = CGRectMake(0, 0 - statusBarHeight, CGRectGetWidth(self.bounds), CGRectGetHeight(self.bounds) + statusBarHeight);
+//    }
+//    else
+//    {
+//        // iOS 6
+//        drawingRect = CGRectMake(0, 0, CGRectGetWidth(self.bounds), CGRectGetHeight(self.bounds));
+//    }
     
-    if ( floor(NSFoundationVersionNumber) > NSFoundationVersionNumber_iOS_6_1 && self.underStatusBar == NO)
-    {
-        // iOS 7
-        CGFloat statusBarHeight = [UIApplication sharedApplication].statusBarFrame.size.height;
-        drawingRect = CGRectMake(0, 0 - statusBarHeight, CGRectGetWidth(self.bounds), CGRectGetHeight(self.bounds) + statusBarHeight);
-    }
-    else
-    {
-        // iOS 6
-        drawingRect = CGRectMake(0, 0, CGRectGetWidth(self.bounds), CGRectGetHeight(self.bounds));
-    }
     
-    
-    _contentView = [[UIView alloc] initWithFrame:self.bounds];
-    _contentView.userInteractionEnabled = NO;
-    _contentView.exclusiveTouch = NO;
-    [self addSubview:_contentView];
+    _backgroundView = [[UIView alloc] initWithFrame:self.bounds];
+    _backgroundView.userInteractionEnabled = NO;
+    _backgroundView.exclusiveTouch = NO;
+    [self addSubview:_backgroundView];
     
     
 }
 
 -(void)drawRect:(CGRect)rect{
-    [super drawRect:rect];
+//    [super drawRect:rect];
 }
 
 - (void)layoutSubviews
@@ -86,34 +93,34 @@
         [self sendSubviewToBack:_contentView];
     }
     // allow all layout subviews call to adjust the frame
-    /*if ( _backgroundView != nil )
+    if ( _backgroundView != nil )
      {
      
-     CGRect rect;
-     if ( floor(NSFoundationVersionNumber) > NSFoundationVersionNumber_iOS_6_1 && self.underStatusBar == NO)
-     {
-     // iOS 7
-     CGFloat statusBarHeight = [UIApplication sharedApplication].statusBarFrame.size.height;
-     rect = CGRectMake(0, 0 - statusBarHeight, CGRectGetWidth(self.bounds), CGRectGetHeight(self.bounds) + statusBarHeight);
-     }
-     else
-     {
-     // iOS 6
-     rect = CGRectMake(0, 0, CGRectGetWidth(self.bounds), CGRectGetHeight(self.bounds));
-     }
-     
-     _backgroundView.frame = rect;
+//     CGRect rect;
+//     if ( floor(NSFoundationVersionNumber) > NSFoundationVersionNumber_iOS_6_1)
+//     {
+//     // iOS 7
+//     CGFloat statusBarHeight = [UIApplication sharedApplication].statusBarFrame.size.height;
+//     rect = CGRectMake(0, 0 - statusBarHeight, CGRectGetWidth(self.bounds), CGRectGetHeight(self.bounds) + statusBarHeight);
+//     }
+//     else
+//     {
+//     // iOS 6
+//     rect = CGRectMake(0, 0, CGRectGetWidth(self.bounds), CGRectGetHeight(self.bounds));
+//     }
+//     
+     _backgroundView.frame = self.backgroundRect;
      [self sendSubviewToBack:_backgroundView];
      // make sure the graident layer is at position 1
      //        [self.layer insertSublayer:self.gradientLayer atIndex:1];
      
-     }*/
+     }
     
-    if (self.backItem != nil) {
+    /*if (self.backItem != nil) {
         NSLog(@"Has Back Item");
     }else{
         NSLog(@"Has NOT Back Item");
-    }
+    }*/
 }
 
 
@@ -164,8 +171,13 @@
  
  }*/
 
+
+-(CGFloat)navComponentAlpha{
+    return self.alpha;
+}
 -(void)setNavComponentAlpha:(CGFloat)navComponentAlpha{
     
+
     self.alpha = navComponentAlpha;
     //    _navComponentAlpha = navComponentAlpha;
     //    _contentView.alpha = navComponentAlpha;
@@ -178,6 +190,19 @@
     
     
 }
+
++(void(^)(UIView * view))defaultBarConfig
+{
+    return _gDefaultBarConfig;
+}
+
++(void)setDefaultBarViewConfig:(void(^)(UIView * view))defaultBarConfig
+{
+    
+    _gDefaultBarConfig = defaultBarConfig;
+	
+}
+
 
 /*-(void)newViewAdded:(UIView *)view{
  if (view!=_backgroundView) {
@@ -232,16 +257,31 @@
 
 -(UIView *)prepareBarViewForViewController:(UIViewController *)viewController
 {
+    
+    
     UIViewController * targetVC = ([viewController isKindOfClass:[UITabBarController class]])?([(UITabBarController *)viewController selectedViewController]):viewController;
     
-    
+//    CALayer * layer = [viewController.view.layer valueForKey:@"AKNavBackgroundLayer"];
+//    if (layer) {
+//        return nil;
+//    }
     UIView * barView = [self barViewForViewController:targetVC];
     
     if (barView) {
-        barView.frame = CGRectMake(0, -44, 320, 44);
-        //    barView.frame = _myBackgroundView.bounds;
+        CGFloat height = CGRectGetMaxY(self.backgroundRect);
+//        barView.frame = CGRectMake(0, -height, CGRectGetWidth([[UIScreen mainScreen] bounds]), height);
+        barView.frame = CGRectMake(0, -height, CGRectGetWidth([[UIScreen mainScreen] bounds]), height);
         barView.opaque = NO;
+        
+        viewController.view.clipsToBounds = NO;
+        viewController.view.layer.masksToBounds = NO;
+        
         [viewController.view.layer addSublayer:barView.layer];
+
+        NSLog(@"Layer Count:%lu", (unsigned long)viewController.view.layer.sublayers.count);
+        
+//        [viewController.view addObserver:self forKeyPath:@"frame" options:(NSKeyValueObservingOptionNew) context:nil];
+        [viewController.view.layer setValue:barView.layer forKey:@"AKNavBackgroundLayer"];
     }
 
     
@@ -251,13 +291,51 @@
     return nil;
 }
 
+-(void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context{
+
+    if ([object isKindOfClass:[UIView class]] && [keyPath isEqualToString:@"frame"]) {
+        
+        UIView * view =(UIView *)object;
+        CGRect frame = [[change objectForKey:NSKeyValueChangeNewKey] CGRectValue];
+//        CALayer * layer = [[[view layer] sublayers] firstObject];
+        CALayer * layer = [view.layer valueForKey:@"AKNavBackgroundLayer"];
+
+        CGFloat height = CGRectGetMaxY(self.backgroundRect);
+        layer.frame = CGRectMake(0, 20, CGRectGetWidth([[UIScreen mainScreen] bounds]), height);
+        
+    }
+}
+
+
+-(void)willTransitFromViewController:(UIViewController *)fromVC toViewController:(UIViewController *)toVC{
+
+    [self prepareBarViewForViewController:fromVC];
+    [self prepareBarViewForViewController:toVC];
+    
+}
+
+-(void)finishedTransitionFromViewController:(UIViewController *)fromVC toViewController:(UIViewController *)viewController canceled:(BOOL)canceled
+{
+    [_backgroundView.subviews makeObjectsPerformSelector:@selector(removeFromSuperview)];
+    
+    UIView * view;
+    if (canceled) {
+        view = [self barViewForViewController:fromVC];
+    }else{
+        view = [self barViewForViewController:viewController];
+    }
+    
+    [_backgroundView addSubview:view];
+    
+}
+
 
 
 -(void)finishedTransitionToViewController:(UIViewController *)viewController
 {
     UIView * view = [self barViewForViewController:viewController];
     
-    for (UIView * subView in [_myBackgroundView.subviews copy]) {
+    for (UIView * subView in [_backgroundView.subviews copy]) {
         if (view == subView) {
             continue;
         }
@@ -266,7 +344,7 @@
     }
     
     if (view != nil && view.superview == nil) {
-        [_myBackgroundView addSubview:view];
+        [_backgroundView addSubview:view];
     }
 }
 
@@ -282,27 +360,50 @@
     }
     
     UIView * barView = viewController.navigationItem.navigationBarView;
-    //    UIView * barView = [_barViewMapTable objectForKey:viewController];
-    //    if (!barView) {
-    //        barView = [[UIView alloc] initWithFrame:self.bounds];
-    ////        UIColor * color = [UIColor colorWithRed:(arc4random_uniform(100)/100.0) green:(arc4random_uniform(100)/100.0) blue:(arc4random_uniform(100)/100.0) alpha:1.000];
-    //        barView.backgroundColor = viewController.view.backgroundColor;
-    //        [_barViewMapTable setObject:barView forKey:viewController];
-    //    }
+
     if (!barView) {
-        barView = [_barViewMapTable objectForKey:viewController];
-        if (!barView && self.defaultBarView) {
-//            barView = self.defaultBarView();
-            barView = [[UILabel alloc] initWithFrame:(CGRectMake(0, 0, 320, 44))];
-            barView.backgroundColor = [UIColor yellowColor];
-            [_barViewMapTable setObject:barView forKey:viewController];
-        }
+        
+        barView = [self getBackgroundView];
     }
     return barView;
     
 }
 
--(void)setFirstView:(UIView *)firstView secondView:(UIView *)secondView
+-(UIView *)getBackgroundView{
+
+    
+    UIView * bgView;
+    for (UIView * view in _backgroundViews) {
+        if (view.layer.superlayer == nil) {
+            bgView = view;
+            break;
+        }
+    }
+    
+    if (!bgView) {
+        
+        UIView * view = [[UIView alloc] initWithFrame:self.backgroundRect];
+        if ((self.defaultBarView || [[self class] defaultBarConfig])) {
+            if (self.defaultBarView) {
+                self.defaultBarView(view);
+            }else if ([self.class defaultBarConfig]) {
+                
+                ([self.class defaultBarConfig])(view);
+            }
+        }
+        
+        if (!_backgroundViews) {
+            _backgroundViews = [NSMutableArray new];
+        }
+        
+        [_backgroundViews addObject:view];
+        bgView = view;
+    }
+    
+    return bgView;
+}
+
+/*-(void)setFirstView:(UIView *)firstView secondView:(UIView *)secondView
 {
     
     
@@ -318,13 +419,13 @@
     [_myBackgroundView bringSubviewToFront:firstView];
      
 
-}
+}*/
 
 
 
 @end
 
-@implementation AKNavigationController
+/*@implementation AKNavigationController
 
 -(NSArray *)popToRootViewControllerAnimated:(BOOL)animated{
     NSLog(@"%s",__PRETTY_FUNCTION__);
@@ -346,7 +447,7 @@
     return [super popToViewController:viewController animated:animated];
 }
 
-@end
+@end*/
 
 @implementation AKBarButtonItem
 

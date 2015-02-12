@@ -6,7 +6,7 @@
 //  Copyright (c) 2013 Colin Eberhardt. All rights reserved.
 //
 
-#import "NavigationController.h"
+#import "AKNavigationController.h"
 #import "AppDelegate.h"
 #import "CEBaseInteractionController.h"
 #import "CEReversibleAnimationController.h"
@@ -15,14 +15,14 @@
 
 #define SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(v)  ([[[UIDevice currentDevice] systemVersion] compare:v options:NSNumericSearch] != NSOrderedAscending)
 
-
-@interface NavigationController () <UINavigationControllerDelegate>
+static BOOL _underStatusBar;
+@interface AKNavigationController () <UINavigationControllerDelegate>
 
 @property (nonatomic, strong) CEReversibleAnimationController * animationController;
 @property (nonatomic, strong) CEBaseInteractionController * interactionController;
 @end
 
-@implementation NavigationController
+@implementation AKNavigationController
 
 - (id)initWithCoder:(NSCoder *)aDecoder {
     if (self = [super initWithCoder:aDecoder]) {
@@ -56,7 +56,7 @@
     CGRect drawingRect;
     
 
-    if (SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"7.0") && self.underStatusBar == NO) {
+    if (SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"7.0") && _underStatusBar == NO) {
         //big size
         CGFloat statusBarHeight = [UIApplication sharedApplication].statusBarFrame.size.height;
         drawingRect = CGRectMake(0, 0, CGRectGetWidth(self.view.bounds), CGRectGetHeight(self.navigationBar.bounds)+statusBarHeight);
@@ -65,23 +65,43 @@
         //small size
         drawingRect = self.navigationBar.bounds;
     }
-    UIView * view = [[UIView alloc] initWithFrame:drawingRect];
     
+    self.navigationBar.backgroundRect = drawingRect;
 
-    
-    UIView * backgroundView = [[UIView alloc] initWithFrame:view.bounds];
-    backgroundView.userInteractionEnabled = NO;
-    backgroundView.clipsToBounds = YES;
-//    [view addSubview:backgroundView];//UC
-    
-    self.navigationBar.backgroundView = backgroundView;
-    [view addSubview:self.navigationBar];
-    [self.view addSubview:view];
+}
+
+-(void)viewWillAppear:(BOOL)animated{
+    [super viewWillAppear:animated];
+    NSLog(@"viewWillAppear - %@", self.topViewController.view);
 }
 
 -(void)viewDidAppear:(BOOL)animated{
     [super viewDidAppear: animated];
-    NSLog(@"Top VC:%@", NSStringFromCGRect(self.topViewController.view.frame));
+    
+
+    //Must Have (While being presented)
+    [self updateViewLayout];
+    
+    NSLog(@"viewDidAppear - %@", self.topViewController.view);
+
+}
+
+-(void)updateViewLayout{
+    
+    UIViewController * viewController = self.topViewController;
+    UIViewController * targetVC = ([viewController isKindOfClass:[UITabBarController class]])?([(UITabBarController *)viewController selectedViewController]):viewController;
+    BOOL shouldHideNavBar = targetVC.navigationItem.navigationBarHidden;
+    
+    if (shouldHideNavBar) {
+        viewController.view.frame = self.view.bounds;
+        self.navigationBar.navComponentAlpha = 0;
+    }else{
+        CGFloat statusBarHeight = CGRectGetMaxY(self.navigationBar.frame);
+        viewController.view.frame = CGRectMake(0, statusBarHeight, CGRectGetWidth(self.view.bounds), CGRectGetHeight(self.view.bounds)-statusBarHeight);
+        self.navigationBar.navComponentAlpha = 1;
+    }
+    //    NSLog(@"didShowViewController %@", NSStringFromCGRect(viewController.view.frame));
+    
 }
 
 -(void)viewDidLayoutSubviews{
@@ -89,11 +109,16 @@
     [super viewDidLayoutSubviews];
     
     
-    if (self.underStatusBar) {
+    if (_underStatusBar) {
         [self makeStatusBarOnTop];
         self.navigationBar.frame = self.navigationBar.bounds;
         self.navigationBar.backgroundView.frame = self.navigationBar.frame;
     }
+    
+    //Must Have
+    [self updateViewLayout];
+    NSLog(@"viewDidLayoutSubviews - %@", self.topViewController.view);
+
 }
 
 -(void)addChildViewController:(UIViewController *)childController{
@@ -101,12 +126,23 @@
     NSLog(@"addChildViewController");
 }
 
--(void)setUnderStatusBar:(BOOL)underStatusBar{
 
-    _underStatusBar = underStatusBar;
-    [self.navigationBar setUnderStatusBar:underStatusBar];
-    
++(BOOL)underStatusBar
+{
+    return _underStatusBar;
 }
+
++(void)setUnderStatusBar:(BOOL)underStatusBar
+{
+    _underStatusBar = underStatusBar;
+}
+
+//-(void)setUnderStatusBar:(BOOL)underStatusBar{
+//
+//    _underStatusBar = underStatusBar;
+//    [self.navigationBar setUnderStatusBar:underStatusBar];
+//    
+//}
 -(void)makeStatusBarOnTop
 {
     static BOOL isAnimating = NO;
@@ -139,32 +175,20 @@
 }
 
 
+
 -(void)navigationController:(UINavigationController *)navigationController didShowViewController:(UIViewController *)viewController animated:(BOOL)animated{
     NSLog(@"did show %@, count %lu", viewController, (unsigned long)navigationController.viewControllers.count);
     
-    UIViewController * targetVC = ([viewController isKindOfClass:[UITabBarController class]])?([(UITabBarController *)viewController selectedViewController]):viewController;
-    BOOL shouldHideNavBar = targetVC.navigationItem.navigationBarHidden;
     
-    if (shouldHideNavBar) {
-        viewController.view.frame = navigationController.view.bounds;
-        NSLog(@"didShowViewController %@", NSStringFromCGRect(viewController.view.frame));
-        
-    }else{
-        CGFloat statusBarHeight = CGRectGetMaxY(navigationController.navigationBar.frame);
-        viewController.view.frame = CGRectMake(0, statusBarHeight, CGRectGetWidth(self.view.bounds), CGRectGetHeight(self.view.bounds)-statusBarHeight);
-    }
-    [(AKNavigationBar *)navigationController.navigationBar finishedTransitionToViewController:targetVC];
+    [self updateViewLayout];
     NSLog(@"VC count = %lu", (unsigned long)navigationController.viewControllers.count);
     self.animationController.navigationController = self;
     if (self.interactionController) {
-        if (YES) {
-//        if (shouldHideNavBar == NO) {
-            
-            [self.interactionController wireToViewController:viewController forOperation:CEInteractionOperationPop];
-        }
+        [self.interactionController wireToViewController:viewController forOperation:CEInteractionOperationPop];
     }
     
     viewController.view.autoresizingMask = UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleWidth;
+
 }
 
 
@@ -173,6 +197,16 @@
     NSLog(@"willShowViewController %@, index = %lu, count = %lu", NSStringFromCGRect(viewController.view.frame), [navigationController.viewControllers indexOfObject:viewController], navigationController.viewControllers.count);
     
     UIViewController * targetVC = ([viewController isKindOfClass:[UITabBarController class]])?([(UITabBarController *)viewController selectedViewController]):viewController;
+    
+    if ([viewController isKindOfClass:[UITabBarController class]]) {
+        
+        viewController.navigationItem.leftBarButtonItems = targetVC.navigationItem.leftBarButtonItems;
+        viewController.navigationItem.rightBarButtonItems = targetVC.navigationItem.rightBarButtonItems;
+        viewController.navigationItem.title = targetVC.navigationItem.title;
+        viewController.navigationItem.titleView = targetVC.navigationItem.titleView;
+        
+    }
+
     
 //    [(AKNavigationBar *)navigationController.navigationBar prepareBarViewForViewController:targetVC];
     [(AKNavigationBar *)navigationController.navigationBar prepareBarViewForViewController:viewController];
