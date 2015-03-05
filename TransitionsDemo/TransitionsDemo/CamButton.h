@@ -10,4 +10,5 @@
 
 @interface CamButton : UIButton
 
++(instancetype)barButtonWithTitle:(NSString *)title;
 @end

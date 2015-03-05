@@ -96,7 +96,20 @@ static BOOL shouldShowNavigationBar = YES;
 //    NSLog(@"%@ didMoveToParentViewController %@", _name, parent);
 //}
 - (IBAction)fullScreen:(id)sender {
-    self.view.frame = [[UIScreen mainScreen] bounds];
+    
+    if (self.navigationController.navigationBarHidden) {
+        self.navigationController.navigationBarHidden = NO;
+        
+        CGRect rect = [[UIScreen mainScreen] bounds];
+        rect.origin.y = 20;
+        rect.size.height -= 20;
+        self.view.frame = rect;
+    }else{
+        self.navigationController.navigationBarHidden = YES;
+        
+        self.view.frame = [[UIScreen mainScreen] bounds];
+    }
+
 }
 
 -(void)setting:(id)sender{

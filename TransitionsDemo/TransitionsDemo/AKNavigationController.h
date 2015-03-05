@@ -17,3 +17,7 @@
 +(void)setUnderStatusBar:(BOOL)underStatusBar;
 
 @end
+
+@interface UIViewController (AKNavigationController)
+
+@end

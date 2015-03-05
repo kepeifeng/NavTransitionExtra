@@ -31,6 +31,9 @@ static void(^_gDefaultBarConfig)(UIView * view) ;
     UIView * _backgroundView;
     
     NSMutableArray * _backgroundViews;
+    
+    CALayer * _layerForFromVC;
+    CALayer * _layerForToVC;
 }
 @synthesize backgroundView = _myBackgroundView;
 
@@ -255,7 +258,12 @@ static void(^_gDefaultBarConfig)(UIView * view) ;
  }
  }*/
 
--(UIView *)prepareBarViewForViewController:(UIViewController *)viewController
+-(void)setHidden:(BOOL)hidden{
+    [super setHidden:hidden];
+
+    
+}
+-(UIView *)prepareBarViewForViewController:(UIViewController *)viewController layer:(CALayer **)layer
 {
     
     
@@ -276,19 +284,20 @@ static void(^_gDefaultBarConfig)(UIView * view) ;
         viewController.view.clipsToBounds = NO;
         viewController.view.layer.masksToBounds = NO;
         
-        [viewController.view.layer addSublayer:barView.layer];
+        *layer = barView.layer;
+        [viewController.view.layer addSublayer:*layer];
 
         NSLog(@"Layer Count:%lu", (unsigned long)viewController.view.layer.sublayers.count);
         
 //        [viewController.view addObserver:self forKeyPath:@"frame" options:(NSKeyValueObservingOptionNew) context:nil];
-        [viewController.view.layer setValue:barView.layer forKey:@"AKNavBackgroundLayer"];
+//        [viewController.view.layer setValue:barView.layer forKey:@"AKNavBackgroundLayer"];
     }
 
     
     //    [self.superview insertSubview:barView belowSubview:self];
     //    [_backgroundView addSubview:barView];
 //    return barView;
-    return nil;
+    return barView;
 }
 
 -(void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context{
@@ -301,7 +310,9 @@ static void(^_gDefaultBarConfig)(UIView * view) ;
         CALayer * layer = [view.layer valueForKey:@"AKNavBackgroundLayer"];
 
         CGFloat height = CGRectGetMaxY(self.backgroundRect);
-        layer.frame = CGRectMake(0, 20, CGRectGetWidth([[UIScreen mainScreen] bounds]), height);
+        if (layer) {
+            layer.frame = CGRectMake(0, 20, CGRectGetWidth([[UIScreen mainScreen] bounds]), height);
+        }
         
     }
 }
@@ -309,14 +320,45 @@ static void(^_gDefaultBarConfig)(UIView * view) ;
 
 -(void)willTransitFromViewController:(UIViewController *)fromVC toViewController:(UIViewController *)toVC{
 
-    [self prepareBarViewForViewController:fromVC];
-    [self prepareBarViewForViewController:toVC];
+    [_backgroundView.subviews makeObjectsPerformSelector:@selector(removeFromSuperview)];
+
+    if (self.hidden == YES) {
+        return;
+    }
+    CALayer * toLayer, * fromLayer;
+    UIView * fromBarView = [self prepareBarViewForViewController:fromVC layer:&fromLayer];
+    UIView * toBarView = [self prepareBarViewForViewController:toVC layer:&toLayer];
+    
+    
+    
+    _layerForToVC = toLayer;
+    _layerForFromVC = fromLayer;
     
 }
 
 -(void)finishedTransitionFromViewController:(UIViewController *)fromVC toViewController:(UIViewController *)viewController canceled:(BOOL)canceled
 {
-    [_backgroundView.subviews makeObjectsPerformSelector:@selector(removeFromSuperview)];
+    
+//    CALayer * toLayer = [viewController.view.layer valueForKey:@"AKNavBackgroundLayer"];
+//    if (toLayer) {
+//        [toLayer removeFromSuperlayer];
+//        [viewController.view.layer needsDisplay];
+//    }
+//    
+//    CALayer * fromLayer = [fromVC.view.layer valueForKey:@"AKNavBackgroundLayer"];
+//    if (fromLayer) {
+//        [fromLayer removeFromSuperlayer];
+//        [fromVC.view.layer needsDisplay];
+//    }
+//
+    if (_layerForToVC) {
+        [_layerForToVC removeFromSuperlayer];
+        _layerForToVC = nil;
+    }
+    if (_layerForFromVC) {
+        [_layerForFromVC removeFromSuperlayer];
+        _layerForFromVC = nil;
+    }
     
     UIView * view;
     if (canceled) {
@@ -324,7 +366,8 @@ static void(^_gDefaultBarConfig)(UIView * view) ;
     }else{
         view = [self barViewForViewController:viewController];
     }
-    
+
+    view.frame = _backgroundView.bounds;
     [_backgroundView addSubview:view];
     
 }
@@ -451,46 +494,12 @@ static void(^_gDefaultBarConfig)(UIView * view) ;
 
 @implementation AKBarButtonItem
 
--(instancetype)initWithImage:(UIImage *)image style:(UIBarButtonItemStyle)style target:(id)target action:(SEL)action{
-    
-    CamButton * button = [[CamButton alloc] init];
-    [button setImage:image
-            forState:(UIControlStateNormal)];
-    [button addTarget:self action:@selector(action) forControlEvents:(UIControlEventTouchUpInside)];
-    button.titleLabel.font = [UIFont systemFontOfSize:12];
-    [button sizeToFit];
-    CGRect buttonRect = button.bounds;
-    buttonRect.size.width += 10;
-    buttonRect.size.height = 31;
-    self = [super initWithCustomView:button];
-    if (self) {
-        
-    }
-    return self;
-}
+
 
 -(instancetype)initWithTitle:(NSString *)title style:(UIBarButtonItemStyle)style target:(id)target action:(SEL)action{
-    CamButton * button = [[CamButton alloc] init];
-    [button setTitle:title
-            forState:(UIControlStateNormal)];
-    [button addTarget:self action:@selector(action) forControlEvents:(UIControlEventTouchUpInside)];
-    button.titleLabel.font = [UIFont boldSystemFontOfSize:12];
+    CamButton * button = [CamButton barButtonWithTitle:title];
+    [button addTarget:target action:action forControlEvents:(UIControlEventTouchUpInside)];
     
-    button.titleLabel.layer.shadowColor = [[UIColor colorWithWhite:0.000 alpha:1] CGColor];
-    button.titleLabel.layer.shadowOffset = CGSizeMake(1/[[UIScreen mainScreen] scale], 1/[[UIScreen mainScreen] scale]);
-    button.titleLabel.layer.shadowRadius = 1;
-    button.titleLabel.layer.shadowOpacity = 1;
-    button.titleLabel.layer.masksToBounds = NO;
-    //    [button setTitleShadowColor:[UIColor colorWithWhite:0.000 alpha:0.650] forState:UIControlStateNormal];
-    //    button.titleLabel.shadowOffset = CGSizeMake(1.0, 1.0);
-    
-    
-    [button sizeToFit];
-    CGRect buttonRect = button.bounds;
-    buttonRect.size.width += 10;
-    buttonRect.size.height = 31;
-    
-    button.frame = buttonRect;
     self = [super initWithCustomView:button];
     if (self) {
         

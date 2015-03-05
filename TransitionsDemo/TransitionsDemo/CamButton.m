@@ -10,6 +10,30 @@
 
 @implementation CamButton
 
++(instancetype)barButtonWithTitle:(NSString *)title
+{
+    CamButton * button = [[[self class] alloc] init];
+    [button setTitle:title
+            forState:(UIControlStateNormal)];
+
+    button.titleLabel.font = [UIFont boldSystemFontOfSize:13];
+    
+    button.titleLabel.layer.shadowColor = [[UIColor colorWithWhite:0.000 alpha:1] CGColor];
+    button.titleLabel.layer.shadowOffset = CGSizeMake(1/[[UIScreen mainScreen] scale], 1/[[UIScreen mainScreen] scale]);
+    button.titleLabel.layer.shadowRadius = 1;
+    button.titleLabel.layer.shadowOpacity = 1;
+    button.titleLabel.layer.masksToBounds = NO;
+    
+    [button sizeToFit];
+    CGRect buttonRect = button.bounds;
+    buttonRect.size.width += 10;
+    buttonRect.size.height = 31;
+    
+    button.frame = buttonRect;
+
+    return button;
+}
+
 -(instancetype)initWithFrame:(CGRect)frame{
     self = [super initWithFrame:frame];
     if (self) {

@@ -34,11 +34,24 @@ static BOOL _underStatusBar;
     }
     return self;
 }
-
+- (instancetype)init
+{
+//    self = [super init];
+    
+    self = [super initWithNavigationBarClass:[AKNavigationBar class] toolbarClass:nil];
+    if (self) {
+        
+        self.delegate = self;
+    }
+    return self;
+}
 -(instancetype)initWithRootViewController:(UIViewController *)rootViewController{
+
 
     self = [super initWithNavigationBarClass:[AKNavigationBar class] toolbarClass:nil];
     if (self) {
+        
+        self.delegate = self;
         [self pushViewController:rootViewController animated:NO];
     }
     return self;
@@ -48,7 +61,9 @@ static BOOL _underStatusBar;
 
 -(void)viewDidLoad{
     [super viewDidLoad];
+    
     self.delegate = self;
+    
     self.animationController = [CEPanAnimationController new];
     self.interactionController = [CEHorizontalSwipeInteractionController new];
     self.view.backgroundColor = [UIColor darkGrayColor];
@@ -86,22 +101,51 @@ static BOOL _underStatusBar;
 
 }
 
+
+
+-(void)setNavigationBarHidden:(BOOL)hidden animated:(BOOL)animated{
+
+    [super setNavigationBarHidden:hidden animated:animated];
+    
+    /*CGRect rect = self.view.bounds;
+    if (hidden) {
+
+    }else{
+    
+        if (self.topViewController.navigationItem.navigationBarHidden == NO) {
+            rect = self.view.bounds;
+            rect.origin.y = CGRectGetHeight(self.navigationBar.bounds);
+            rect.size.height -= rect.origin.y;
+            
+        }
+    }
+    
+    CGRect topVCRect = self.topViewController.view.frame;
+    self.topViewController.view.frame = rect;*/
+
+}
+
 -(void)updateViewLayout{
     
     UIViewController * viewController = self.topViewController;
     UIViewController * targetVC = ([viewController isKindOfClass:[UITabBarController class]])?([(UITabBarController *)viewController selectedViewController]):viewController;
     BOOL shouldHideNavBar = targetVC.navigationItem.navigationBarHidden;
     
-    if (shouldHideNavBar) {
+    if (shouldHideNavBar || self.navigationBarHidden) {
         viewController.view.frame = self.view.bounds;
         self.navigationBar.navComponentAlpha = 0;
     }else{
         CGFloat statusBarHeight = CGRectGetMaxY(self.navigationBar.frame);
         viewController.view.frame = CGRectMake(0, statusBarHeight, CGRectGetWidth(self.view.bounds), CGRectGetHeight(self.view.bounds)-statusBarHeight);
+        
+//        CGRect viewControllerFrame = viewController.view.frame;
+
         self.navigationBar.navComponentAlpha = 1;
     }
-    //    NSLog(@"didShowViewController %@", NSStringFromCGRect(viewController.view.frame));
     
+    if ([viewController isKindOfClass:[UITabBarController class]]) {
+        [viewController.view setNeedsLayout];
+    }    
 }
 
 -(void)viewDidLayoutSubviews{
@@ -166,6 +210,7 @@ static BOOL _underStatusBar;
 
 -(void)pushViewController:(UIViewController *)viewController animated:(BOOL)animated{
     NSLog(@"push");
+    [viewController setAutomaticallyAdjustsScrollViewInsets:NO];
     [super pushViewController:viewController animated:animated];
 }
 
@@ -176,25 +221,36 @@ static BOOL _underStatusBar;
 
 
 
--(void)navigationController:(UINavigationController *)navigationController didShowViewController:(UIViewController *)viewController animated:(BOOL)animated{
+@end
+
+@implementation UIViewController (AKNavigationController)
+
+
+
+-(void)navigationController:(AKNavigationController *)navigationController didShowViewController:(UIViewController *)viewController animated:(BOOL)animated{
     NSLog(@"did show %@, count %lu", viewController, (unsigned long)navigationController.viewControllers.count);
     
     
-    [self updateViewLayout];
+    [navigationController updateViewLayout];
     NSLog(@"VC count = %lu", (unsigned long)navigationController.viewControllers.count);
-    self.animationController.navigationController = self;
-    if (self.interactionController) {
-        [self.interactionController wireToViewController:viewController forOperation:CEInteractionOperationPop];
+    navigationController.animationController.navigationController = navigationController;
+    if (navigationController.interactionController) {
+        [navigationController.interactionController wireToViewController:viewController forOperation:CEInteractionOperationPop];
     }
     
     viewController.view.autoresizingMask = UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleWidth;
-
+    
+    if ([viewController isKindOfClass:[UITabBarController class]] || viewController == navigationController.topViewController) {
+        
+        [(AKNavigationBar *)navigationController.navigationBar finishedTransitionFromViewController:nil toViewController:viewController canceled:NO];
+    }
+    
 }
 
 
 -(void)navigationController:(UINavigationController *)navigationController willShowViewController:(UIViewController *)viewController animated:(BOOL)animated{
-
-    NSLog(@"willShowViewController %@, index = %lu, count = %lu", NSStringFromCGRect(viewController.view.frame), [navigationController.viewControllers indexOfObject:viewController], navigationController.viewControllers.count);
+    
+    NSLog(@"willShowViewController %@, index = %lu, count = %lu", NSStringFromCGRect(viewController.view.frame), (unsigned long)[navigationController.viewControllers indexOfObject:viewController], (unsigned long)navigationController.viewControllers.count);
     
     UIViewController * targetVC = ([viewController isKindOfClass:[UITabBarController class]])?([(UITabBarController *)viewController selectedViewController]):viewController;
     
@@ -206,37 +262,37 @@ static BOOL _underStatusBar;
         viewController.navigationItem.titleView = targetVC.navigationItem.titleView;
         
     }
-
     
-//    [(AKNavigationBar *)navigationController.navigationBar prepareBarViewForViewController:targetVC];
-    [(AKNavigationBar *)navigationController.navigationBar prepareBarViewForViewController:viewController];
+    
+    
+    //    [(AKNavigationBar *)navigationController.navigationBar prepareBarViewForViewController:viewController];
     
 }
 
-- (id<UIViewControllerAnimatedTransitioning>)navigationController:(UINavigationController *)navigationController
+- (id<UIViewControllerAnimatedTransitioning>)navigationController:(AKNavigationController *)navigationController
                                   animationControllerForOperation:(UINavigationControllerOperation)operation
                                                fromViewController:(UIViewController *)fromVC
                                                  toViewController:(UIViewController *)toVC {
     NSLog(@"%s",__PRETTY_FUNCTION__);
     // when a push occurs, wire the interaction controller to the to- view controller
-//    if (AppDelegateAccessor.navigationControllerInteractionController) {
-//        [AppDelegateAccessor.navigationControllerInteractionController wireToViewController:toVC forOperation:CEInteractionOperationPop];
-//    }
+    //    if (AppDelegateAccessor.navigationControllerInteractionController) {
+    //        [AppDelegateAccessor.navigationControllerInteractionController wireToViewController:toVC forOperation:CEInteractionOperationPop];
+    //    }
     
-    if (self.animationController) {
-        self.animationController.reverse = operation == UINavigationControllerOperationPop;
+    if (navigationController.animationController) {
+        navigationController.animationController.reverse = operation == UINavigationControllerOperationPop;
     }
     
-    return self.animationController;
+    return navigationController.animationController;
 }
 
 
 
-- (id <UIViewControllerInteractiveTransitioning>)navigationController:(UINavigationController *)navigationController
+- (id <UIViewControllerInteractiveTransitioning>)navigationController:(AKNavigationController *)navigationController
                           interactionControllerForAnimationController:(id <UIViewControllerAnimatedTransitioning>) animationController {
     NSLog(@"%s",__PRETTY_FUNCTION__);
     // if we have an interaction controller - and it is currently in progress, return it
-    id <UIViewControllerInteractiveTransitioning> controller = self.interactionController && self.interactionController.interactionInProgress ? self.interactionController : nil;
+    id <UIViewControllerInteractiveTransitioning> controller = navigationController.interactionController && navigationController.interactionController.interactionInProgress ? navigationController.interactionController : nil;
     if ([controller isKindOfClass:[CEHorizontalSwipeInteractionController class]]) {
         [(CEHorizontalSwipeInteractionController *) controller setNavigationController:navigationController];
     }
